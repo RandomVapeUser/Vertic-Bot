@@ -107,7 +107,7 @@ async def nuke(ctx: commands.Context, channel: discord.TextChannel):
     if nuke_channel is not None:
         new_channel = await nuke_channel.clone()
         await nuke_channel.delete()
-        await new_channel.send(f"`Nuked by {ctx.author.mention}`")
+        await new_channel.send(f"Nuked by {ctx.author.mention}")
 
     else:
         await ctx.send(f"No channel named {channel.name} was found!")
