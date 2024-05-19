@@ -4,8 +4,14 @@ from discord import app_commands
 from discord.ext import commands
 from git import Repo
 from config import data
+import os
 
 bot = commands.Bot(command_prefix = "?", intents = discord.Intents.all())
+
+local_repo_path = r"C:\Users\salom\Desktop\verticbot"  # Local path to the cloned repository
+hwid_file_path = os.path.join(local_repo_path, "hwids.txt")
+repo_url = "https://github.com/RandomVapeUser/Vector-Client-HWIDS.git" 
+commit_message = "HWID's updated nigga"
 
 async def sender(ctx, member: discord.Member):
     server_name = member.guild.name
@@ -53,19 +59,6 @@ async def hwidrequest(ctx: commands.Context, hwid: str, reason: str):
     embed.add_field(name="HWID Request", value=f"{ctx.author.id} has requested to change their HWID to {hwid}",inline=False)
     embed.add_field(name="Reason:",value=f"{reason}",inline=False)
     await channel.send(embed=embed)
-
-import discord
-from discord.ext import commands
-from git import Repo
-
-import discord
-from discord.ext import commands
-from git import Repo
-
-local_repo_path = "https://github.com/RandomVapeUser/Vector-Client-HWIDS"
-hwid_file_path = f"{local_repo_path}/HWIDS.txt"
-repo_url = "https://github.com/RandomVapeUser/Vector-Client-HWIDS.git"
-commit_message = "HWID's updated nigga"
 
 @bot.hybrid_command(description="Set a user's HWID")
 async def sethwid(ctx: commands.Context, user: discord.Member, hwid: str):
