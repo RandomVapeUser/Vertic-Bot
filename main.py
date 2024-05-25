@@ -13,6 +13,9 @@ import os
 bot = commands.Bot(command_prefix = "?", intents = discord.Intents.all())
 
 logging.basicConfig(level=logging.INFO)
+
+log_channel = bot.get_channel(1242721581042765927)
+datetime_now = datetime.now()
 file_path = 'hwids.json'
 
 if not os.path.exists(file_path):
@@ -44,13 +47,13 @@ async def on_member_join(member: discord.Member):
 
 @bot.hybrid_command(description="Generate Client key")
 async def gen(ctx: commands.Context):
+    global datetime_now
+    global log_channel
     role = discord.utils.get(ctx.guild.roles, name="Owner")
     if role not in ctx.author.roles:
         await ctx.send("You cannot generate keys!")
         return
     
-    datetime_now = datetime.now()
-    log_channel = bot.get_channel(1242721581042765927)
     client_prefix = "vertic-"
     random_suffix = ''.join(random.choices('abcdefghiojshyen0123456789', k=20))
     custom_key = client_prefix + random_suffix
@@ -70,6 +73,7 @@ async def gen(ctx: commands.Context):
 
 @bot.hybrid_command(description="Delete a number of messages in a channel!")
 async def purge(ctx: commands.Context, number: int):
+    global datetime_now
     if ctx.author.guild_permissions.manage_messages != True:
         await ctx.send("You cannot purge messages!")
         return
@@ -95,18 +99,16 @@ async def loghwid(ctx: commands.Context,user: discord.Member, hwid: str):
     save_hwids_info(hwids_info)
     await ctx.send(f"{user.name}'s HWID has been updated!")
 
-    
-
 @bot.hybrid_command(description="Request a change for your HWID!")
 async def hwidrequest(ctx: commands.Context, hwid: str, reason: str):
+    global datetime_now
+    global log_channel
     role = discord.utils.get(ctx.guild.roles, name="vertic")
     if role is None or role not in ctx.author.roles:
         await ctx.send("You do not own Vertic Client!")
         return
-    datetime_now = datetime.now()
 
     request_channel = bot.get_channel(1240965482115498005)
-    log_channel = bot.get_channel(1242721581042765927)
 
     hwid_embed = discord.Embed(title="Hwid Request 📩")
     hwid_embed.add_field(name="Made by:", value=f"`{ctx.author.name} ({ctx.author.id})`",inline=False)
@@ -130,13 +132,13 @@ async def hwidrequest(ctx: commands.Context, hwid: str, reason: str):
         
 @bot.hybrid_command(description="Nuke a channel")
 async def nuke(ctx: commands.Context, channel: discord.TextChannel):
+    global datetime_now
+    global log_channel
     role = discord.utils.get(ctx.guild.roles, name="Owner")
     if role not in ctx.author.roles:
         await ctx.send("You cannot nuke channels!")
         return
 
-    datetime_now = datetime.now()
-    log_channel = bot.get_channel(1242721581042765927)
     nuke_channel = discord.utils.get(ctx.guild.channels, name=channel.name)
 
     log_embed = discord.Embed(title="Channel nuke logged!")
@@ -147,15 +149,21 @@ async def nuke(ctx: commands.Context, channel: discord.TextChannel):
     await nuke_channel.delete()
     await new_channel.send(f"`Nuked by {ctx.author.name}`")
     await log_channel.send(embed=log_embed)
-    await ctx.send(f"{}")
-            
+
 @bot.hybrid_command(description="Redeem a client key!")
 async def redeem(ctx: commands.Context, key: str):
+    global datetime_now
+    global log_channel
     vertic_role = discord.utils.get(ctx.guild.roles, name="vertic")
     if vertic_role in ctx.author.roles:
         await ctx.send("You already own vertic!")
         return
     
+    log_embed = discord.Embed(title="Key redeemed!")
+    log_embed.add_field(name="",value=f"{ctx.author.name} has reedemed vertic client!")
+    log_embed.add_field(name="Key: ",value=f"`{key}`",inline=False)
+    log_embed.set_footer(text=f"Time: {datetime_now}")
+
     with open("keys.txt", "r+") as f:
         channel = bot.get_channel(1240965482115498005)
         lines = f.readlines()
@@ -165,11 +173,13 @@ async def redeem(ctx: commands.Context, key: str):
                 await ctx.send(f"Redeemed key successfully!")
                 await ctx.author.add_roles(vertic_role)
                 await channel.send(f"{ctx.author.id} has redeemed key `{key}`")
+                await log_channel.send(embed=log_embed)
                 f.truncate()
                 return
             else:
                 f.write(line)
-        f.truncate()  
+        f.truncate()
+
     await ctx.send("Key not found.")
 
 @bot.hybrid_command(description="Sync Commands")
