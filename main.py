@@ -2,7 +2,6 @@ import discord
 import random
 from discord import app_commands
 from discord.ext import commands
-from git import Repo
 import logging
 from config import data
 from datetime import datetime
@@ -85,10 +84,14 @@ async def purge(ctx: commands.Context, number: int):
 @bot.hybrid_command(description="Log a users hwid into the database!")
 async def loghwid(ctx: commands.Context,user: discord.Member, hwid: str):
     role = discord.utils.get(ctx.guild.roles, name="Owner")
+    vertic_role = discord.utils.get(ctx.guild.roles, name="vertic")
     if role is None or role not in ctx.author.roles:
         await ctx.send("This command is only availabe for owners!")
         return
     
+    if vertic_role not in user.roles:
+        await ctx.send("That user does not own Vertic!")
+        return
     hwids_info = load_hwids_info()
     
     hwids_info[user.name] = {
@@ -181,6 +184,41 @@ async def redeem(ctx: commands.Context, key: str):
         f.truncate()
 
     await ctx.send("Key not found.")
+
+@bot.hybrid_command(description="Dev information about users!")
+async def userinfo(ctx : commands.Context, user: discord.Member):
+    if ctx.author.id not in data["devs"]:
+        await ctx.send("This command is only available for devs!")
+        return
+    
+    vertic_role = discord.utils.get(ctx.guild.roles, name="vertic")
+    hwids_info = load_hwids_info()
+
+
+    if user.name in hwids_info:
+        user_data = hwids_info[user.name]
+        hwid = user_data["user_hwid"]
+        user_id = user_data["user_id"]
+
+        has_client = discord.Embed(title=f"Client Info for {user.name}",description="Overall description about user stats!")
+        has_client.add_field(name=f"\{user.name}'s ID:", value=f"`{user.id}`")
+        has_client.add_field(name="\Client Ownership: ", value="This user owns Vertic!")
+        has_client.add_field(name="\Hwid: ", value=f"{hwid}")
+        await ctx.author.send(embed=has_client)
+
+    else:
+        if vertic_role in user.roles:
+            client = discord.Embed(title=f"Client Info for {user.name}",description="Overall description about user stats!")
+            client.add_field(name=f"\{user.name}'s ID:", value=f"`{user.id}`")
+            client.add_field(name="\Client Ownership: ", value="This user owns Vertic!")
+            client.add_field(name="\Hwid: ", value="This users hwid has not been logged yet ⚠️")
+            await ctx.author.send(embed=client)
+        else:
+            no_client = discord.Embed(title=f"Client Info for {user.name}",description="Overall description about user stats")
+            no_client.add_field(name=f"\{user.name}'s ID:", value=f"`{user.id}`")
+            no_client.add_field(name="\Client Ownership: ", value="The user does not own Vertic.")
+            no_client.add_field(name="\Hwid: ", value="None")
+            await ctx.author.send(embed=no_client)
 
 @bot.hybrid_command(description="Sync Commands")
 async def sync(ctx: commands.Context):
