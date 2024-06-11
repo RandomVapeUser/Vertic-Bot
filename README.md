@@ -1,0 +1,1 @@
+Src for the bot idc its more of a script since i didnt bother to make a command system with different folders and shit, the hwid local storage was purelly to check whos hwid has been added to the auth system not for the authentication system for the client.
